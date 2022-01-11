@@ -1,4 +1,4 @@
-# spei_cocoa_west
+# SPEI - Cocoa West Africa
 SPEI cocoa west africa
 
 Análisis de datos climáticos para el oeste de África. 
