@@ -83,7 +83,7 @@ add_change <- function(var_tcl, ssp){
     
     rst_ftr <- raster::stack(rst_ftr)
     dou <- glue('./data/raster/terraclimate/future')
-    writeRaster(x = rst_ftr, filename = glue('{dou}/Terraclimate_{var_tcl}_{i + 40}.tif'), overwrite = TRUE)
+    writeRaster(x = rst_ftr, filename = glue('{dou}/Terraclimate_{ssp}_{var_tcl}_{i + 40}.tif'), overwrite = TRUE)
     cat('Done!\n')
     
   })
