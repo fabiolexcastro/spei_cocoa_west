@@ -64,6 +64,7 @@ map(1:length(ssps), function(k){
     cat('To calculate the difference\n')
     df <- ft - cr
     pr <- (df / cr) * 100
+    pr[is.nan(pr[])] <- 0
     
     cat('To write the raster\n')
     Map('writeRaster', x = unstack(pr),  filename = glue('./data/raster/difference/cmip6/{vrs[j]}_{ssps[k]}_ssp370_2020.2040_{1:12}.tif'), overwrite = TRUE)
