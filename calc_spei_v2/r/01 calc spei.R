@@ -7,7 +7,7 @@
 # Load libraries ----------------------------------------------------------
 require(pacman)
 pacman::p_load(raster, rgdal, rgeos, glue, stringr, sf, tidyverse, fs, 
-               gtools, SPEI, future, furrr, MetBrewer, RColorBrewer)
+               gtools, SPEI, future, furrr, MetBrewer, RColorBrewer, zoo)
 
 g <- gc(reset = TRUE)
 rm(list = ls())
@@ -103,3 +103,33 @@ write.csv(spei, '../tble/spei_1.csv', row.names = FALSE)
 # To make the maps --------------------------------------------------------
 map(.x = 2000:2019, .f = make_map)
 
+# Main results ------------------------------------------------------------
+test <- filter(tble, gid == 1)
+test <- spei(ts(test$value), 1)
+
+test$coefficients
+test$scale
+test$kernel
+test$distribution
+test$fit
+test$na.action
+
+plot(test$fitted)
+temp <- test$fitted
+temp <- as_tibble(temp)
+temp <- mutate(temp, dates = dtes[241:length(dtes)])
+colnames(temp) <- c('spei', 'date')
+temp <- mutate(temp, year = str_sub(date, 2, 5), month = str_sub(date, 7, nchar(date)))
+temp <- mutate(temp, month = as.numeric(month))
+temp <- mutate(temp, month = ifelse(month < 10, paste0('0', month), month))
+temp <- mutate(temp, date = paste0(year, '-', month))
+temp <- mutate(temp, date = as.Date(date, format = '%Y-%M-%d'))
+temp <- mutate(temp, date2 = str_sub(date, start = 1, end = 7))
+temp <- mutate(temp, date2 = as.yearmon(date2, "%Y-%m"))
+
+plot(temp$spei, type = 'l')
+
+glne <- ggplot() + 
+  geom_line(data = temp, aes(x = date2, y = spei), group = 1) + 
+  theme_bw() + 
+  labs(x = '', y = 'SPEI')
