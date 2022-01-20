@@ -122,8 +122,8 @@ colnames(temp) <- c('spei', 'date')
 temp <- mutate(temp, year = str_sub(date, 2, 5), month = str_sub(date, 7, nchar(date)))
 temp <- mutate(temp, month = as.numeric(month))
 temp <- mutate(temp, month = ifelse(month < 10, paste0('0', month), month))
-temp <- mutate(temp, date = paste0(year, '-', month))
-temp <- mutate(temp, date = as.Date(date, format = '%Y-%M-%d'))
+temp <- mutate(temp, date = paste0(year, '-', month, '-01'))
+temp <- mutate(temp, date2 = as.Date(date, format = '%Y-%m-%d'))
 temp <- mutate(temp, date2 = str_sub(date, start = 1, end = 7))
 temp <- mutate(temp, date2 = as.yearmon(date2, "%Y-%m"))
 
@@ -132,4 +132,9 @@ plot(temp$spei, type = 'l')
 glne <- ggplot() + 
   geom_line(data = temp, aes(x = date2, y = spei), group = 1) + 
   theme_bw() + 
-  labs(x = '', y = 'SPEI')
+  labs(x = '', y = 'SPEI') + 
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+
+ggsave(plot = glne, filename = '../png/graph/spei_gid_1.png', units = 'in', width = 10, height = 7, dpi = 300)
