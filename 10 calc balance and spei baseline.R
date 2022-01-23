@@ -7,7 +7,7 @@
 # Load libraries ----------------------------------------------------------
 require(pacman)
 pacman::p_load(raster, rgdal, rgeos, glue, stringr, sf, tidyverse, fs, 
-               gtools, SPEI, future, furrr)
+               gtools, SPEI, future, furrr, RColorBrewer, colorspace)
 
 g <- gc(reset = TRUE)
 rm(list = ls())
@@ -16,7 +16,40 @@ options(scipen = 999)
 # Set working directory
 setwd('//catalogue/workspace-cluster9/SPEI_COCOA_WEST_AFRICA')
 
+# Functions to use --------------------------------------------------------
+make_map <- function(yr){
+  
+  # yr <- 1980
+  
+  cat('Start ', yr, '!', '\n')
+  
+  tb <- spi %>% filter(year == yr) %>% inner_join(., tibble(month = 1:12, month_abb = month.abb))
+  tb <- tb %>% mutate(month_abb = factor(month_abb, levels = month.abb))
+  
+  gg <- ggplot() + 
+    geom_tile(data = tb, aes(x = x, y = y, fill = spei)) + 
+    facet_wrap(.~month_abb) +
+    scale_fill_gradientn(limits = c(rnge[1], rnge[2]), colors = brewer.pal(n = 10, name = 'BrBG')) +
+    geom_sf(data = limt, fill = NA, col = '#D5D5D5', lwd = 0.1) + 
+    coord_sf() + 
+    ggtitle(label = glue('SPEI {yr}')) +
+    theme_void() +
+    theme(legend.position = 'bottom', 
+          legend.key.width = unit(x = 1.5, units = 'cm'), 
+          plot.title = element_text(size = 14, hjust = 0.5, face = 'bold')) +
+    labs(x = '', y = '', fill = 'SPEI')
+  
+  ggsave(plot = gg, 
+         filename = glue('./png/maps/spei/spei_{yr}_scale_01.jpg'), 
+         units = 'in', width = 7, height = 4, dpi = 300)
+  
+  cat('Done!\n')
+  
+}
+
+
 # Load data ---------------------------------------------------------------
+limt <- st_read('./data/shp/base/countries_target_4.shp')
 fles <- dir_ls('./data/raster/terraclimate/baseline', regexp = '.nc$')
 etps <- grep('etp', fles, value = TRUE)
 etps <- as.character(etps)
@@ -77,5 +110,13 @@ spi <- furrr::future_map(.x = gids, .f = function(k){
   
 })
 future:::ClusterRegistry(action = 'stop')
-  
 
+sp2 <- spi
+spi <- spi[-which(is.na(spi) == TRUE)]
+spi <- bind_rows(spi)
+saveRDS(object = spi, file = './data/rds/climate/spei/spei_v1.rds')
+
+# Process this table ------------------------------------------------------
+range(spi$spei)
+rnge <- c(-2.477300, 3.660859)
+map(.x = 1980:2019, .f = make_map)
