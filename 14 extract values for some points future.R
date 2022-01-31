@@ -45,13 +45,46 @@ trgt <- read_csv('./data/tbl/points/trgt_gha.csv')
 trgt <- mutate(trgt, gid = 1:nrow(trgt))
 
 # Get the values ----------------------------------------------------------
-spei <- readRDS('./data/rds/climate/spei/spei_future_BCC.CSM2.MR_v1.rds')
+scle <- '06'
+mdl  <- 'CNRM.ESM2.1' 
+spei <- readRDS(glue('./data/rds/climate/spei/spei_future_v1_BCC.CSM2.MR_scale_{scle}.rds'))
+vles <- map(.x = 2020:2050, .f = get_values)
+vles <- bind_rows(vles)
+vles <- mutate(vles, model = mdl)
+colnames(vles) <- c('id', 'variable', glue('spei_{scle}'), 'year', 'mdl')
+write.csv(vles, glue('./data/tbl/points/trgt_gha_future_{mdl}_{scle}_vles.csv'), row.names = FALSE)
+
+# -------------------------------------------------------------------------
+
+
+# Load data ---------------------------------------------------------------
+cntr <- st_read('//catalogue/workspace-cluster9/CLIMA_LOCA/1.Data/shp/base/all_countries.shp')
+
+# Study zone 
+limt <- st_read('./data/shp/base/countries_target_4.shp')
+ghna <- st_read('//alliancedfs.alliance.cgiar.org/CL9_Coffee_Cocoa2/_ghana/Felix/Data/Production/Ghana_Admin/GHA_admbndp1_1m_GAUL.shp')
+
+# Points
+trgt <- read_csv('./data/tbl/points/trgt_gha.csv')
+trgt <- mutate(trgt, gid = 1:nrow(trgt))
+
+# Get the values ---------------------------------  -------------------------
+mdl  <- 'BCC.CSM2.MR'
+tbls <- dir_ls('./data/rds/climate/spei') %>% 
+  grep(mdl, ., value = TRUE) %>% 
+  map(readRDS)
+scls <- c('01', '03', '06')
+spei <- map(.x = 1:length(tbls), .f = function(i){tbls[[i]] %>% setNames(c('x', 'y', 'gid', 'date', 'year', 'month', glue('spei_{scls[i]}')))})
+spei <- spei %>% purrr::reduce(., inner_join)
+
+write.csv(spei, glue('./data/tbl/points/trgt_gha_future_{mdl}_scales_all_vles.csv'), row.names = FALSE)
+
 mdl  <- basename('./data/rds/climate/spei/spei_future_BCC.CSM2.MR_v1.rds') %>% str_split(., '_') 
 mdl  <- mdl[[1]][3]
 vles <- map(.x = 2020:2050, .f = get_values)
 vles <- bind_rows(vles)
 vles <- mutate(vles, model = mdl)
-write.csv(vles, glue('./data/tbl/points/trgt_gha_future_{mdl}_vles.csv'), row.names = FALSE)
+write.csv(vles, glue('./data/tbl/points/trgt_gha_future_{mdl}_scale_{scl}_vles.csv'), row.names = FALSE)
 
 
 
