@@ -27,7 +27,7 @@ make_freq <- function(tbl, gid, col, yrs){
   smm <- tbl %>% 
     dplyr::select(id, month, year, col) %>% 
     setNames(c('id', 'month', 'year', 'value')) %>% 
-    filter(value <= -1.5 | value >= 1.5) %>% 
+    filter(value <= -1.5 ) %>% # | value >= 1.5
     group_by(id, year, month) %>% 
     summarise(count = n()) %>% 
     ungroup() %>% 
@@ -39,7 +39,16 @@ make_freq <- function(tbl, gid, col, yrs){
     replace(is.na(.), 0) %>% 
     full_join(., tibble(year = yrs)) %>% 
     arrange(year) %>% 
-    replace(is.na(.), 0) 
+    replace(is.na(.), 0)
+  
+  avg <- tbl %>% 
+    dplyr::select(id, month, year, col) %>% 
+    setNames(c('id', 'month', 'year', 'value')) %>% 
+    filter(value <= -1.5 ) %>% # | value >= 1.5
+    group_by(id, year) %>% 
+    summarise(avrg = mean(value)) %>% 
+    ungroup() %>% 
+    filter(id == parse_number(gid))
   
   smm_gth <- smm %>% 
     gather(var, value, -year) %>% 
@@ -48,12 +57,15 @@ make_freq <- function(tbl, gid, col, yrs){
   smm_gth <- smm_gth %>% mutate(value = factor(value, levels = unq))
   smm_gth <- smm_gth %>% filter(var == gid)
   smm_gth <- smm_gth %>% mutate(value = as.numeric(as.character(value)))
+  smm_gth <- full_join(smm_gth, avg, by = 'year')
+  smm_gth <- mutate(smm_gth, avrg = round(avrg, digits = 1))
   
   cat('To make the graph\n')
   ggp <- ggplot(data = smm_gth, aes(x = year, y = value)) + 
     geom_col() + 
-    theme_pander() + 
-    ggtitle(label = glue('Months frequency with SPEI <= -1.5 & SPEI >= 1.5'), 
+    theme_pander() +
+    geom_text(aes(label = avrg), position=position_dodge(width = 0.9), vjust = -0.25, size = 2) +
+    ggtitle(label = glue('Months frequency with SPEI <= -1.5'),  #& SPEI >= 1.5
             subtitle = glue('Coordinate: {parse_number(gid)} - {gsub("_", " ", toupper(col))}')) +
     labs(x = 'Year', y = 'Count (months)') + 
     theme(axis.title.y = element_text(size = 12, face = 'bold'),
@@ -131,7 +143,7 @@ gg1.all <- grid.arrange(gg1.crn, gg1.ftr, ncol = 2, nrow = 1)
 gg2.all <- grid.arrange(gg2.crn, gg2.ftr, ncol = 2, nrow = 1)
 gg3.all <- grid.arrange(gg3.crn, gg3.ftr, ncol = 2, nrow = 1)
 
-ggsave(plot = gg1.all, filename = '../png/graphs/index_freq/gid_1_crn_ftr.png', units = 'in', width = 11, height = 9, dpi = 300)
-ggsave(plot = gg2.all, filename = '../png/graphs/index_freq/gid_2_crn_ftr.png', units = 'in', width = 11, height = 9, dpi = 300)
-ggsave(plot = gg3.all, filename = '../png/graphs/index_freq/gid_3_crn_ftr.png', units = 'in', width = 11, height = 9, dpi = 300)
+ggsave(plot = gg1.all, filename = '../png/graphs/index_freq/gid_1_crn_ftr_dry.png', units = 'in', width = 11, height = 9, dpi = 300)
+ggsave(plot = gg2.all, filename = '../png/graphs/index_freq/gid_2_crn_ftr_dry.png', units = 'in', width = 11, height = 9, dpi = 300)
+ggsave(plot = gg3.all, filename = '../png/graphs/index_freq/gid_3_crn_ftr_dry.png', units = 'in', width = 11, height = 9, dpi = 300)
 
