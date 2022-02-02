@@ -15,23 +15,19 @@ g <- gc(reset = TRUE)
 rm(list = ls())
 options(scipen = 999)
 
-
 # Functions to use --------------------------------------------------------
 make_freq <- function(tbl, gid, col, yrs){
-  
+
   # tbl <- coor_bsln
   # gid <- 'g1'
   # col <- 'spei_01'
   # yrs <- 1980:2019
-  
+
   cat('Start\n')
   smm <- tbl %>% 
-    filter(spei_01 <= -1.5 | spei_01 >= 1.5, 
-           spei_03 <= -1.5 | spei_03 >= 1.5,
-           spei_06 <= -1.5 | spei_06 >= 1.5) %>% 
-    ungroup() %>% 
     dplyr::select(id, month, year, col) %>% 
     setNames(c('id', 'month', 'year', 'value')) %>% 
+    filter(value <= -1.5 | value >= 1.5) %>% 
     group_by(id, year, month) %>% 
     summarise(count = n()) %>% 
     ungroup() %>% 
@@ -64,7 +60,7 @@ make_freq <- function(tbl, gid, col, yrs){
           axis.title.x = element_text(size = 12, face = 'bold'),
           plot.title = element_text(size = 14, hjust = 0.5, face = 'bold'),
           plot.subtitle = element_text(size = 12, hjust = 0.5, face = 'bold')) +
-    scale_y_continuous(limits = c(0, 3))
+    scale_y_continuous(limits = c(0, 6))
   
   return(ggp)
   
@@ -72,7 +68,7 @@ make_freq <- function(tbl, gid, col, yrs){
 
 # Load data ---------------------------------------------------------------
 scls <- c('01', '03', '06')
-fles <- dir_ls('./data/rds/climate/spei', regexp = '.rds$')
+fles <- dir_ls('../data/rds/climate/spei', regexp = '.rds$')
 mdls <- c('BCC.CSM2.MR', 'CanESM5', 'CNRM.CM6.1', 'CNRM.ESM2.1')
 mdel <- mdls[1]
 
@@ -87,12 +83,12 @@ ftre <- map2(ftre, scls, function(x, y) x %>% setNames(c('x', 'y', 'gid', 'date'
 ftre <- purrr::reduce(ftre, inner_join)
 
 # Coordinates
-coor <- read_csv('./data/tbl/points/trgt_gha.csv')
-coor_bsln <- dir_ls('./data/tbl/points', regexp = 'baseline') %>% map(., read_csv)
+coor <- read_csv('../data/tbl/points/trgt_gha.csv')
+coor_bsln <- dir_ls('../data/tbl/points', regexp = 'baseline') %>% map(., read_csv)
 coor_bsln <- map2(coor_bsln, scls, function(x, y) x %>% setNames(c('id', 'month', glue('spei_{y}'), 'year')))
 coor_bsln <- purrr::reduce(coor_bsln, inner_join)
 
-coor_ftre <- dir_ls('./data/tbl/points', regexp = 'future') %>% grep('BCC.CSM2.MR', ., value = TRUE) %>% map(., read_csv)
+coor_ftre <- dir_ls('../data/tbl/points', regexp = 'future') %>% grep('BCC.CSM2.MR', ., value = TRUE) %>% map(., read_csv)
 coor_ftre <- map2(coor_ftre, scls, function(x, y) x %>% setNames(c('id', 'month', glue('spei_{y}'), 'year', 'model')))
 coor_ftre <- purrr::reduce(coor_ftre, inner_join)
 
@@ -116,18 +112,18 @@ gg3.crn <- grid.arrange(gg3.crn.s01, gg3.crn.s03, gg3.crn.s06, ncol = 1, nrow = 
 
 # Future
 gg1.ftr.s01 <- make_freq(tbl = coor_ftre, gid = 'g1', col = 'spei_01', yrs = 2020:2040)       
-gg1.ftr.s03 <- make_freq(tbl = coor_ftre, gid = 'g1', col = 'spei_03', yrs = 1980:2019)       
-gg1.ftr.s06 <- make_freq(tbl = coor_ftre, gid = 'g1', col = 'spei_06', yrs = 1980:2019)  
+gg1.ftr.s03 <- make_freq(tbl = coor_ftre, gid = 'g1', col = 'spei_03', yrs = 2020:2040)       
+gg1.ftr.s06 <- make_freq(tbl = coor_ftre, gid = 'g1', col = 'spei_06', yrs = 2020:2040)  
 gg1.ftr <- grid.arrange(gg1.ftr.s01, gg1.ftr.s03, gg1.ftr.s06, ncol = 1, nrow = 3)
 
-gg2.ftr.s01 <- make_freq(tbl = coor_ftre, gid = 'g2', col = 'spei_01', yrs = 1980:2019)       
-gg2.ftr.s03 <- make_freq(tbl = coor_ftre, gid = 'g2', col = 'spei_03', yrs = 1980:2019)       
-gg2.ftr.s06 <- make_freq(tbl = coor_ftre, gid = 'g2', col = 'spei_06', yrs = 1980:2019)  
+gg2.ftr.s01 <- make_freq(tbl = coor_ftre, gid = 'g2', col = 'spei_01', yrs = 2020:2040)       
+gg2.ftr.s03 <- make_freq(tbl = coor_ftre, gid = 'g2', col = 'spei_03', yrs = 2020:2040)       
+gg2.ftr.s06 <- make_freq(tbl = coor_ftre, gid = 'g2', col = 'spei_06', yrs = 2020:2040)  
 gg2.ftr <- grid.arrange(gg2.ftr.s01, gg2.ftr.s03, gg2.ftr.s06, ncol = 1, nrow = 3)
 
-gg3.ftr.s01 <- make_freq(tbl = coor_ftre, gid = 'g3', col = 'spei_01', yrs = 1980:2019)       
-gg3.ftr.s03 <- make_freq(tbl = coor_ftre, gid = 'g3', col = 'spei_03', yrs = 1980:2019)       
-gg3.ftr.s06 <- make_freq(tbl = coor_ftre, gid = 'g3', col = 'spei_06', yrs = 1980:2019)  
+gg3.ftr.s01 <- make_freq(tbl = coor_ftre, gid = 'g3', col = 'spei_01', yrs = 2020:2040)       
+gg3.ftr.s03 <- make_freq(tbl = coor_ftre, gid = 'g3', col = 'spei_03', yrs = 2020:2040)       
+gg3.ftr.s06 <- make_freq(tbl = coor_ftre, gid = 'g3', col = 'spei_06', yrs = 2020:2040)  
 gg3.ftr <- grid.arrange(gg3.ftr.s01, gg3.ftr.s03, gg3.ftr.s06, ncol = 1, nrow = 3)
 
 # GGarrange all
@@ -135,7 +131,7 @@ gg1.all <- grid.arrange(gg1.crn, gg1.ftr, ncol = 2, nrow = 1)
 gg2.all <- grid.arrange(gg2.crn, gg2.ftr, ncol = 2, nrow = 1)
 gg3.all <- grid.arrange(gg3.crn, gg3.ftr, ncol = 2, nrow = 1)
 
-ggsave(plot = gg1.all, filename = './png/graphs/index_freq/gid_1_crn_ftr.png', units = 'in', width = 11, height = 9, dpi = 300)
-ggsave(plot = gg2.all, filename = './png/graphs/index_freq/gid_2_crn_ftr.png', units = 'in', width = 11, height = 9, dpi = 300)
-ggsave(plot = gg3.all, filename = './png/graphs/index_freq/gid_3_crn_ftr.png', units = 'in', width = 11, height = 9, dpi = 300)
+ggsave(plot = gg1.all, filename = '../png/graphs/index_freq/gid_1_crn_ftr.png', units = 'in', width = 11, height = 9, dpi = 300)
+ggsave(plot = gg2.all, filename = '../png/graphs/index_freq/gid_2_crn_ftr.png', units = 'in', width = 11, height = 9, dpi = 300)
+ggsave(plot = gg3.all, filename = '../png/graphs/index_freq/gid_3_crn_ftr.png', units = 'in', width = 11, height = 9, dpi = 300)
 
