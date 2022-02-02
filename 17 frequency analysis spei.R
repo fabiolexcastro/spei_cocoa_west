@@ -53,12 +53,21 @@ make_freq <- function(tbl, gid, col, yrs){
   smm_gth <- smm %>% 
     gather(var, value, -year) %>% 
     mutate(var = factor(var, levels = glue('g{1:3}'))) 
+  
   unq <- unique(smm_gth$value) %>% sort()
   smm_gth <- smm_gth %>% mutate(value = factor(value, levels = unq))
   smm_gth <- smm_gth %>% filter(var == gid)
   smm_gth <- smm_gth %>% mutate(value = as.numeric(as.character(value)))
   smm_gth <- full_join(smm_gth, avg, by = 'year')
   smm_gth <- mutate(smm_gth, avrg = round(avrg, digits = 1))
+  # smm_gth <- inner_join(smm_gth, tibble(year = 1980:2019, decada = c(rep(1980, 10), rep(1990, 10), rep(2000, 10), rep(2010, 10))))
+  smm_gth <- inner_join(smm_gth, tibble(year = 2020:2049, decada = c(rep(2020, 10), rep(2030, 10), rep(2040, 10))))
+  
+  cnt <- smm_gth %>% 
+    group_by(decada) %>% 
+    summarise(value = sum(value)) %>% 
+    ungroup() %>% 
+    setNames(c('Decade', 'Count events (dry)'))
   
   cat('To make the graph\n')
   ggp <- ggplot(data = smm_gth, aes(x = year, y = value)) + 
@@ -72,7 +81,9 @@ make_freq <- function(tbl, gid, col, yrs){
           axis.title.x = element_text(size = 12, face = 'bold'),
           plot.title = element_text(size = 14, hjust = 0.5, face = 'bold'),
           plot.subtitle = element_text(size = 12, hjust = 0.5, face = 'bold')) +
-    scale_y_continuous(limits = c(0, 6))
+    scale_y_continuous(limits = c(0, 6)) +
+    # annotation_custom(tableGrob(cnt, theme = ttheme(base_style = 'classic'), rows = NULL), xmin = 1980, xmax = 1995, ymin = 4, ymax = 6)
+    annotation_custom(tableGrob(cnt, theme = ttheme(base_style = 'classic'), base_size = 2, rows = NULL), xmin = 2020, xmax = 2027, ymin = 4, ymax = 6)
   
   return(ggp)
   
@@ -123,19 +134,19 @@ gg3.crn.s06 <- make_freq(tbl = coor_bsln, gid = 'g3', col = 'spei_06', yrs = 198
 gg3.crn <- grid.arrange(gg3.crn.s01, gg3.crn.s03, gg3.crn.s06, ncol = 1, nrow = 3)
 
 # Future
-gg1.ftr.s01 <- make_freq(tbl = coor_ftre, gid = 'g1', col = 'spei_01', yrs = 2020:2040)       
-gg1.ftr.s03 <- make_freq(tbl = coor_ftre, gid = 'g1', col = 'spei_03', yrs = 2020:2040)       
-gg1.ftr.s06 <- make_freq(tbl = coor_ftre, gid = 'g1', col = 'spei_06', yrs = 2020:2040)  
+gg1.ftr.s01 <- make_freq(tbl = coor_ftre, gid = 'g1', col = 'spei_01', yrs = 2020:2050)       
+gg1.ftr.s03 <- make_freq(tbl = coor_ftre, gid = 'g1', col = 'spei_03', yrs = 2020:2050)       
+gg1.ftr.s06 <- make_freq(tbl = coor_ftre, gid = 'g1', col = 'spei_06', yrs = 2020:2050)  
 gg1.ftr <- grid.arrange(gg1.ftr.s01, gg1.ftr.s03, gg1.ftr.s06, ncol = 1, nrow = 3)
 
-gg2.ftr.s01 <- make_freq(tbl = coor_ftre, gid = 'g2', col = 'spei_01', yrs = 2020:2040)       
-gg2.ftr.s03 <- make_freq(tbl = coor_ftre, gid = 'g2', col = 'spei_03', yrs = 2020:2040)       
-gg2.ftr.s06 <- make_freq(tbl = coor_ftre, gid = 'g2', col = 'spei_06', yrs = 2020:2040)  
+gg2.ftr.s01 <- make_freq(tbl = coor_ftre, gid = 'g2', col = 'spei_01', yrs = 2020:2050)       
+gg2.ftr.s03 <- make_freq(tbl = coor_ftre, gid = 'g2', col = 'spei_03', yrs = 2020:2050)       
+gg2.ftr.s06 <- make_freq(tbl = coor_ftre, gid = 'g2', col = 'spei_06', yrs = 2020:2050)  
 gg2.ftr <- grid.arrange(gg2.ftr.s01, gg2.ftr.s03, gg2.ftr.s06, ncol = 1, nrow = 3)
 
-gg3.ftr.s01 <- make_freq(tbl = coor_ftre, gid = 'g3', col = 'spei_01', yrs = 2020:2040)       
-gg3.ftr.s03 <- make_freq(tbl = coor_ftre, gid = 'g3', col = 'spei_03', yrs = 2020:2040)       
-gg3.ftr.s06 <- make_freq(tbl = coor_ftre, gid = 'g3', col = 'spei_06', yrs = 2020:2040)  
+gg3.ftr.s01 <- make_freq(tbl = coor_ftre, gid = 'g3', col = 'spei_01', yrs = 2020:2050)       
+gg3.ftr.s03 <- make_freq(tbl = coor_ftre, gid = 'g3', col = 'spei_03', yrs = 2020:2050)       
+gg3.ftr.s06 <- make_freq(tbl = coor_ftre, gid = 'g3', col = 'spei_06', yrs = 2020:2050)  
 gg3.ftr <- grid.arrange(gg3.ftr.s01, gg3.ftr.s03, gg3.ftr.s06, ncol = 1, nrow = 3)
 
 # GGarrange all
@@ -143,7 +154,7 @@ gg1.all <- grid.arrange(gg1.crn, gg1.ftr, ncol = 2, nrow = 1)
 gg2.all <- grid.arrange(gg2.crn, gg2.ftr, ncol = 2, nrow = 1)
 gg3.all <- grid.arrange(gg3.crn, gg3.ftr, ncol = 2, nrow = 1)
 
-ggsave(plot = gg1.all, filename = '../png/graphs/index_freq/gid_1_crn_ftr_dry.png', units = 'in', width = 11, height = 9, dpi = 300)
-ggsave(plot = gg2.all, filename = '../png/graphs/index_freq/gid_2_crn_ftr_dry.png', units = 'in', width = 11, height = 9, dpi = 300)
-ggsave(plot = gg3.all, filename = '../png/graphs/index_freq/gid_3_crn_ftr_dry.png', units = 'in', width = 11, height = 9, dpi = 300)
+ggsave(plot = gg1.all, filename = '../png/graphs/index_freq/gid_1_crn_ftr_dry.png', units = 'in', width = 18, height = 10, dpi = 300)
+ggsave(plot = gg2.all, filename = '../png/graphs/index_freq/gid_2_crn_ftr_dry.png', units = 'in', width = 18, height = 10, dpi = 300)
+ggsave(plot = gg3.all, filename = '../png/graphs/index_freq/gid_3_crn_ftr_dry.png', units = 'in', width = 18, height = 10, dpi = 300)
 
