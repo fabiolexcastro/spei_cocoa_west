@@ -1,0 +1,24 @@
+'https://ds.nccs.nasa.gov/thredds/fileServer/AMES/NEX/GDDP-CMIP6/MIROC6/ssp585/r1i1p1f1/tasmin/tasmin_day_MIROC6_ssp585_r1i1p1f1_gn_2100.nc'
+
+# Precipitation
+path <- glue('{base}/{mdel}/historical/r1i1p1f1/pr/pr_day_{mdel}_historical_r1i1p1f1_{type}_{year}.nc') # gn
+dest <- glue('../tif/nasa/baseline/{basename(path)}')
+download.file(path, dest, mode = 'wb')
+
+# Minimum temperature
+path <- glue('{base}/{mdel}/historical/r1i1p1f1/tasmin/tasmin_day_{mdel}_historical_r1i1p1f1_{type}_{year}.nc') # gr
+dest <- glue('../tif/nasa/baseline/{basename(path)}')
+download.file(path, dest, mode = 'wb')
+
+# Maximum temperature
+path <- glue('{base}/{mdel}/historical/r1i1p1f1/tasmax/tasmax_day_{mdel}_historical_r1i1p1f1_{type}_{year}.nc') # gr
+dest <- glue('../tif/nasa/baseline/{basename(path)}')
+download.file(path, dest, mode = 'wb')
+
+# Average temperature
+path <- 'https://ds.nccs.nasa.gov/thredds/catalog/AMES/NEX/GDDP-CMIP6/ACCESS-CM2/historical/r1i1p1f1/tasmin/catalog.html?dataset=AMES/NEX/GDDP-CMIP6/ACCESS-CM2/historical/r1i1p1f1/tasmin/tasmin_day_ACCESS-CM2_historical_r1i1p1f1_gn_2002.nc'
+path <- glue('{base}/{mdel}/historical/r1i1p1f1/tas/tas_day_{mdel}_historical_r1i1p1f1_{type}_{year}.nc') # gr - gn
+dest <- glue('../tif/nasa/baseline/{basename(path)}')
+download.file(path, dest, mode = 'wb')
+
+cat(bgGreen('Done!\n'))
